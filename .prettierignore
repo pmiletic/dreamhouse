@@ -9,6 +9,7 @@
 .vscode
 jsconfig.json
 coverage/
+node_modules/
 
 # Exclude project config (edited by CI workflow)
 sfdx-project.json
