@@ -22,4 +22,16 @@ public with sharing class ContentVersionsSelector extends fflib_SObjectSelector 
             contentVersionIds
         );
     }
+
+    public List<ContentVersion> selectByIdsAndLatest(
+        Set<Id> contentDocumentIds
+    ) {
+        fflib_QueryFactory query = newQueryFactory(false, false, true); // assertCRUD, enforceFLS, includeSelectorFields
+        query.setCondition('ContentDocumentId IN :contentDocumentIds');
+        query.setCondition('IsLatest = TRUE');
+
+        return (List<ContentVersion>) Database.query(
+            String.escapeSingleQuotes(query.toSOQL())
+        );
+    }
 }

@@ -101,12 +101,7 @@ public with sharing class PropertyController {
             contentIds.add(link.ContentDocumentId);
         }
 
-        return [
-            SELECT Id, Title
-            FROM ContentVersion
-            WHERE ContentDocumentId IN :contentIds AND IsLatest = TRUE
-            WITH USER_MODE
-            ORDER BY CreatedDate
-        ];
+        return ContentVersionsSelector.newInstance()
+            .selectByIdsAndLatest(contentIds);
     }
 }
