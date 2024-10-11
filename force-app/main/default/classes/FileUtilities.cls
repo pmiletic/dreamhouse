@@ -12,12 +12,13 @@ public with sharing class FileUtilities {
             contentVersion.PathOnClient = filename;
             insert contentVersion;
 
-            contentVersion = [
-                SELECT ContentDocumentId
-                FROM ContentVersion
-                WHERE Id = :contentVersion.Id
-                WITH USER_MODE
-            ];
+            ContentVersionsSelector selector = ContentVersionsSelector.newInstance();
+            selector.setDataAccess(fflib_SObjectSelector.DataAccess.USER_MODE);
+            List<ContentVersion> contentVersions = selector.selectByIds(
+                new Set<Id>{ contentVersion.Id }
+            );
+
+            contentVersion = contentVersions[0];
 
             ContentDocumentLink contentDocumentLink = new ContentDocumentLink();
             contentDocumentLink.ContentDocumentId = contentVersion.ContentDocumentId;
@@ -26,8 +27,10 @@ public with sharing class FileUtilities {
             insert contentDocumentLink;
 
             return contentDocumentLink.Id;
-        } catch (Exception e) {
-            throw new AuraHandledException('Error creating file: ' + e);
+        } catch (Exception ex) {
+            throw new AuraHandledException(
+                'Error creating file: ' + ex.getMessage()
+            );
         }
     }
 }
