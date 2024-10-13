@@ -1,15 +1,12 @@
 @IsTest(IsParallel=true)
 private class ContentDocumentLinksSelectorTest {
     @IsTest
-    static void testSelectByIds() {
-        ContentDocumentLinksSelector.newInstance().selectByIds(new Set<Id>());
-        Assert.areEqual(1, Limits.getQueries(), 'One query expected');
-    }
-
-    @IsTest
-    static void testSelectByIdsAndFileTypes() {
+    static void testSelectByLinkedEntityIdAndFileTypes() {
+        Id propertId = fflib_IDGenerator.generate(
+            Schema.Property__c.sObjectType
+        );
         ContentDocumentLinksSelector.newInstance()
-            .selectByIdsAndFileTypes(new Set<Id>(), new Set<String>());
+            .selectByLinkedEntityIdAndFileTypes(propertId, new Set<String>());
         Assert.areEqual(1, Limits.getQueries(), 'One query expected');
     }
 }

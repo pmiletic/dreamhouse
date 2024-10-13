@@ -17,25 +17,18 @@ public with sharing class ContentDocumentLinksSelector extends fflib_SObjectSele
         );
     }
 
-    public List<ContentDocumentLink> selectByIds(
-        Set<Id> contentDocumentLinkIds
-    ) {
-        return (List<ContentDocumentLink>) this.selectSObjectsById(
-            contentDocumentLinkIds
-        );
-    }
-
-    public List<ContentDocumentLink> selectByIdsAndFileTypes(
-        Set<Id> linkedEntityIds,
+    public List<ContentDocumentLink> selectByLinkedEntityIdAndFileTypes(
+        Id linkedEntityId,
         Set<String> fileTypes
     ) {
         Set<String> fieldsToQuery = new Set<String>{ 'ContentDocument.Title' };
 
         fflib_QueryFactory query = newQueryFactory(false, false, true); // assertCRUD, enforceFLS, includeSelectorFields
         query.selectFields(fieldsToQuery);
-        query.setCondition('LinkedEntityId IN :linkedEntityIds');
-        query.setCondition('ContentDocument.FileType IN :fileTypes');
-
+        query.setCondition(
+            'LinkedEntityId = :linkedEntityId AND ContentDocument.FileType IN :fileTypes'
+        );
+        System.debug(query.toSOQL());
         return (List<ContentDocumentLink>) Database.query(
             String.escapeSingleQuotes(query.toSOQL())
         );

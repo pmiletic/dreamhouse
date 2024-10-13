@@ -34,44 +34,24 @@ public with sharing class PropertyController {
         PagedResult result = new PagedResult();
         result.pageSize = safePageSize;
         result.pageNumber = safePageNumber;
-        result.totalItemCount = [
-            SELECT COUNT()
-            FROM Property__c
-            WHERE
-                (Name LIKE :searchPattern
-                OR City__c LIKE :searchPattern
-                OR Tags__c LIKE :searchPattern)
-                AND Price__c <= :safeMaxPrice
-                AND Beds__c >= :safeMinBedrooms
-                AND Baths__c >= :safeMinBathrooms
-        ];
-        result.records = [
-            SELECT
-                Id,
-                Name,
-                Address__c,
-                City__c,
-                State__c,
-                Description__c,
-                Price__c,
-                Baths__c,
-                Beds__c,
-                Thumbnail__c,
-                Location__Latitude__s,
-                Location__Longitude__s
-            FROM Property__c
-            WHERE
-                (Name LIKE :searchPattern
-                OR City__c LIKE :searchPattern
-                OR Tags__c LIKE :searchPattern)
-                AND Price__c <= :safeMaxPrice
-                AND Beds__c >= :safeMinBedrooms
-                AND Baths__c >= :safeMinBathrooms
-            WITH USER_MODE
-            ORDER BY Price__c
-            LIMIT :safePageSize
-            OFFSET :offset
-        ];
+        result.totalItemCount = PropertiesSelector.newInstance()
+            .selectCountByNameAndOtherCriteria(
+                searchPattern,
+                safeMaxPrice,
+                safeMinBedrooms,
+                safeMinBathrooms
+            );
+
+        result.records = PropertiesSelector.newInstance()
+            .selectByNameAndOtherCriteria(
+                searchPattern,
+                safeMaxPrice,
+                safeMinBedrooms,
+                safeMinBathrooms,
+                safePageSize,
+                offset
+            );
+
         return result;
     }
 
@@ -82,14 +62,11 @@ public with sharing class PropertyController {
      */
     @AuraEnabled(cacheable=true scope='global')
     public static List<ContentVersion> getPictures(Id propertyId) {
-        List<ContentDocumentLink> links = [
-            SELECT Id, LinkedEntityId, ContentDocument.Title
-            FROM ContentDocumentLink
-            WHERE
-                LinkedEntityId = :propertyId
-                AND ContentDocument.FileType IN ('PNG', 'JPG', 'GIF')
-            WITH USER_MODE
-        ];
+        List<ContentDocumentLink> links = ContentDocumentLinksSelector.newInstance()
+            .selectByLinkedEntityIdAndFileTypes(
+                propertyId,
+                new Set<String>{ 'PNG', 'JPG', 'GIF' }
+            );
 
         if (links.isEmpty()) {
             return null;
